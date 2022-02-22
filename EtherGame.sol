@@ -1,3 +1,7 @@
+/* In This code the Vulnerability will lie on line no 32 use of  require(this.balance == finalMileStone) if an attacker send ether to this contract then this conteract will lock forever means there milesttone will not achieved an attacker can send an ether with selfdestruct function on his contract to this contract forcefully.
+*/
+
+
 contract EtherGame {
 
  uint public payoutMileStone1 = 3 ether;
